@@ -61,7 +61,7 @@ jobs:
   terraform-apply:
     runs-on: self-hosted
     needs: terraform-init-plan
-    environments: dev
+    environment: dev
     # Here environments are used for the manual approval for this job by as many number's of people as we want.
     steps:
       - name: Checkout
