@@ -1,16 +1,20 @@
-name: "1st workflow"
+name: "1st workflow-prod"
 
 # on: workflow_dispatch
+# this is used to trigger the workflow manually from github actions tab
 
 permissions:
   id-token: write
   contents: read
 
 on:
+  pull_request:
+    branches:
+      - main
+
   push:
     branches:
       - 'main'
-      - 'feature/**'
 
 jobs:
   terraform-init-plan:
@@ -39,29 +43,31 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init -input=false
-        working-directory: environments/dev
+        working-directory: environments/prod
 
       - name: Terraform fmt
         id: fmt
         run: terraform fmt -check
         continue-on-error: true
-        working-directory: environments/dev
+        working-directory: environments/prod
 
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
-        working-directory: environments/dev
+        working-directory: environments/prod
         
       - name: Terraform Plan
         id: plan
         run: terraform plan -no-color -ingut=false
         continue-on-error: true
-        working-directory: environments/dev
+        working-directory: environments/prod
 
   terraform-apply:
+    name: terraform-apply
     runs-on: self-hosted
+    if: github.ref == 'refs/heads/main'
     needs: terraform-init-plan
-    environment: dev
+    environment: prod
     # Here environments are used for the manual approval for this job by as many number's of people as we want.
     steps:
       - name: Checkout
@@ -77,12 +83,12 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init -input=false
-        working-directory: environments/dev
+        working-directory: environments/prod
 
       - name: Terraform Apply
         id: apply
         run: terraform apply --auto-approve
         continue-on-error: true
-        working-directory: environments/dev
+        working-directory: environments/prod
 
      
